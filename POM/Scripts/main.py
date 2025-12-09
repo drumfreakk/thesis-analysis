@@ -19,10 +19,10 @@ import aux_functions
 
 datapath = '.'
 #prefix = '20251201-7-40x' # Uncrossed, hard
-prefix = '20251201-3-20x' # Easy
+#prefix = '20251201-3-20x' # Easy
 #prefix = '20251126-3-1-10x' # Shape change
-#prefix = '20251205-5-20x' # Small shape change, uncrossed
-
+prefix = '20251205-5-20x' # Small shape change, uncrossed
+#prefix = '20251126-1-1-5x' # Many drops. To be clear, 5x is a guess
 
 # Assume the pixel spacing is isotropic
 # The spacing is in um/px
@@ -37,10 +37,15 @@ match prefix.split('-')[-1]:
 		spacing = 1/16.56
 	case _:
 		spacing = 1
-		print("No magnification found, guessing pixel size")
+		print("WARNING: No magnification found, guessing pixel size")
 	
 
 
+mpl.style.use("classic")
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif"
+})
 ### Load and threshold the picture
 
 img_original = ski.io.imread(os.path.join(datapath, prefix + '.tif'))
@@ -60,8 +65,8 @@ print("Thresholded image")
 black = ski.util.dtype_limits(img_thresh)[0]
 label_image = label(img_thresh, background=black)
 
-fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(12, 12))
-ax.imshow(img_original)
+fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(12, 12), height_ratios=[3,1])
+axs[0].imshow(img_original)
 
 round_droplets = []
 elongated_droplets = []
@@ -83,13 +88,13 @@ for region in regionprops(label_image, intensity_image=img_gray, spacing=(spacin
 	   region.bbox[3] > img_thresh.shape[1] - 10:
 	   continue
 
-	print(round(region.area_filled,1), '\t', round(region.eccentricity,2))
+#	print(round(region.area_filled,1), '\t', round(region.eccentricity,2))
 
 	if region.eccentricity > 0.7:
 		elongated_droplets.append(region)
 	else:
 		round_droplets.append(region)
-		print('\t', round(region.equivalent_diameter_area,3))
+#		print('\t', round(region.equivalent_diameter_area,3))
 
 elongated_droplets, new_round = aux_functions.merge_nearby_regions(elongated_droplets)
 round_droplets += new_round
@@ -103,9 +108,9 @@ for region in round_droplets:
 	circ = mpatches.Circle((region.centroid[1]/spacing, region.centroid[0]/spacing),\
 							radius=region.equivalent_diameter_area/(2*spacing),\
 							fill=False, edgecolor=color, linewidth=1)
-	ax.add_patch(circ)
+	axs[0].add_patch(circ)
 
-	ax.text(minc, minr-2, round(region.area_filled,2), color=color)
+#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
 
 for region in elongated_droplets:
 	minr, minc, maxr, maxc = region.bbox
@@ -113,13 +118,24 @@ for region in elongated_droplets:
 	color = 'green'
 	rect = mpatches.Rectangle((minc-1, minr-1), maxc - minc, maxr - minr,
 								  fill=False, edgecolor=color, linewidth=1)
-	ax.add_patch(rect)
+	axs[0].add_patch(rect)
 	
-	ax.text(minc, minr-2, round(region.area_filled,2), color=color)
+#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
+
+
+sizes = []
+for drop in round_droplets:
+	sizes.append(drop.equivalent_diameter_area)
 
 
 ### Show the picture
 
-ax.set_axis_off()
+
+axs[0].set_axis_off()
+axs[1].hist(sizes, bins=50, density=True)
+axs[1].set_ylabel("Frequency")
+axs[1].set_xlabel("Diameter ($\\mathrm{\\mu m}$)")
 plt.tight_layout()
 plt.show()
+
+

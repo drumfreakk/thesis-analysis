@@ -1,6 +1,7 @@
 
 def merge_nearby_regions(elongated_droplets):
 #	twins = {}
+#	print("WARNING: Sketchy logic ahead!!")
 #	
 #	for i in range(len(elongated_droplets)):
 #		loc = elongated_droplets[i].centroid

@@ -1,7 +1,8 @@
 
 import sys
-sys.path.insert(1, '../../')
+sys.path.insert(1, '../')
 import standard
+import standard.tex_friendly
 
 import os
 
@@ -19,10 +20,6 @@ from skimage.measure import label, regionprops
 def get_magnification(fname):
 	return fname.split('.')[-2].split('-')[-1]
 
-def tex_friendly(string):
-	s = "\\#".join(string.split('#'))
-	return "\\%".join(s.split('%'))
-
 def create_plot(sizes, title, save, show):
 
 	plt.legend()
@@ -33,7 +30,7 @@ def create_plot(sizes, title, save, show):
 	plt.title(tex_friendly(title))
 	
 	if save:
-		plt.savefig("out/" + title + ".pdf", dpi=600)
+		plt.savefig("graphs/" + title + ".pdf", dpi=600)
 	if show:
 		plt.show()
 	plt.close()
@@ -148,7 +145,7 @@ def get_droplets(path, name, save=False, show=True):
 	density = (len(elongated_droplets) + len(round_droplets))* 10**6 / \
 		  	  (img_gray.shape[0]*img_gray.shape[1]*spacing**2)
 
-	print("Average droplet density:", density, "droplets / mm^2 (ignoring focal plane depth)")
+	print("Average droplet density:", density, "droplets / mm^2 (ignoring focal plane depth)\n")
 
 	sizes = []
 	for drop in round_droplets:
@@ -172,7 +169,7 @@ def get_droplets(path, name, save=False, show=True):
 	prefix = name.split('.')[0]
 	plt.title(tex_friendly(prefix))
 	if save:
-		plt.savefig("out/" + prefix + ".pdf", dpi=600)
+		plt.savefig("graphs/" + prefix + ".pdf", dpi=600)
 	if show:
 		plt.show()
 	plt.close()

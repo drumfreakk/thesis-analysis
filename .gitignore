@@ -11,3 +11,7 @@
 *.mpeg
 *.xcf
 *.bmp
+__pycache__
+*.pyc
+*.pdf
+*.dump

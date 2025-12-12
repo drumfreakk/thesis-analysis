@@ -1,5 +1,10 @@
 #!/usr/bin/python3
 
+import sys
+sys.path.insert(1, '../')
+import standard
+from standard import tex_friendly
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -26,16 +31,16 @@ def generate_plots(filename):
 			peaks_index, _ = scipy.signal.find_peaks(intensity_df[col])
 			peaks = [intensity_df.index[i] for i in peaks_index]
 			temp_means.append(peaks)
-		print(temp_means)
+#		print(temp_means)
 		
 		fig, ax = plt.subplots()
 		ax.plot(intensity_df)	
 
 		ax.set_xlim([10**0,10**4])
 		ax.set_xscale('log')
-		fig.suptitle(filename.split(".")[0] + " " + sheet)
+		fig.suptitle(filename.split(".")[0] + " " + tex_friendly(sheet))
 		ax.set_xlabel("Size (d.nm)")
-		ax.set_ylabel("Intensity (%)")
+		ax.set_ylabel("Intensity (\\%)")
 
 		sub_ax = ax.inset_axes([0.74, 0.73, 0.24, 0.24])
 		sub_ax.plot(correlogram_df)
@@ -52,15 +57,9 @@ def generate_plots(filename):
 			y_up = 2.5
 		sub_ax.set_ylim([0, y_up])
 
-		plt.savefig("graphs/" + filename.split(".")[0] + " - " + sheet + ".png")
+		plt.savefig("graphs/" + filename.split(".")[0] + " - " + sheet + ".png", dpi=600)
 #		plt.show()
 		plt.close()
-
-mpl.style.use("classic")
-plt.rcParams.update({
-#    "text.usetex": True,
-    "font.family": "serif"
-})
 
 if len(sys.argv) != 2:
 	print("Use a proper argument")

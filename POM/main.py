@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 import sys
-sys.path.insert(1, '../../')
+sys.path.insert(1, '../')
 import standard
+import standard.tex_friendly
 
 import os
 
@@ -19,7 +20,7 @@ def combine_pictures(name, path, pictures, save, show):
 	sizes = []
 	density = 0
 	for pic in pictures:
-		drops = get_droplets(path, pic, False, False)
+		drops = get_droplets(path, pic, False, True)
 		sizes += drops["round_sizes"]
 		density += drops["density"]
 
@@ -59,36 +60,51 @@ save = True
 show = True
 
 if sys.argv[1] == "all":
+	# ./main.py all dir
+	# Analyze each image individually in dir
+
 	path = sys.argv[2]
 	for file in os.listdir(path):
 		get_droplets(path, file, save, show)
+
+
 elif sys.argv[1] == "combine":
+	# ./main.py combine <prefix> <title>
+	# Analyze each picture starting with prefix in the current dir.
+	# Combine the measurements as title
+
 	print("Combining images")
 	files = []
 	for file in os.listdir():
 		if file.startswith(sys.argv[2]):
 			files.append(file)
 	combine_pictures(sys.argv[3], '.', files, save, show)
+
+
 elif sys.argv[1] == "custom":
+	# ./main.py custom <title> <pictures>
+	# Combine all pictures given by pictures (can be a wildcard) under title
+
 	print("Custom")
 	title = sys.argv[2]
 	pics = sys.argv[3:]
 	combine_pictures(title, '.', pics, save, show)
-elif sys.argv[1] == "dumps":
+
+
+elif sys.argv[1] == "multi":
+	# ./main.py multi <title> <saves>
+	# Combine multiple saved runs (from custom) under title
+
 	print("Combining multiple runs")
 	title = sys.argv[2]
 	pics = sys.argv[3:]
 	combine_runs(title, pics, save, show)
+
+
 else:
+	# ./main.py <pic>
+	# Analyze pic
+
 	get_droplets(sys.argv[1], save, show)
 	
-		
-
-
-#prefix = '20251201-7-40x' # Uncrossed, hard
-#prefix = '20251201-3-20x' # Easy
-#prefix = '20251126-3-1-10x' # Shape change
-#prefix = '20251205-5-20x' # Small shape change, uncrossed
-#prefix = '20251126-1-1-5x' # Many drops. To be clear, 5x is a guess
-
 

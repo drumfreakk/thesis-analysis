@@ -43,7 +43,7 @@ def generate_plots(filename):
 		ax.set_xlim([10**0,10**4])
 		ax.set_xscale('log')
 		fig.suptitle(filename.split(".")[0] + " " + tex_friendly(sheet))
-		ax.set_xlabel("Size (d.nm)")
+		ax.set_xlabel("Vesicle diameter (nm)")
 		ax.set_ylabel("Intensity (\\%)")
 
 		sub_ax = ax.inset_axes([0.74, 0.73, 0.24, 0.24])

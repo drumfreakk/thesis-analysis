@@ -20,16 +20,27 @@ def tex_friendly(string):
 	s = "\\#".join(string.split('#'))
 	return "\\%".join(s.split('%'))
 
-def pout(a, line_prefix = ""):
+def pout(a, line_prefix = "", skip_first_prefix=False):
+	out = "" if skip_first_prefix else line_prefix
+	
 	if isinstance(a, (list,np.ndarray)):
-		out = line_prefix + "[\n" + line_prefix
+		out += "[\n" + line_prefix
 		for i in a:
 			out += "\t" + pout(i, '\t') + ",\n" + line_prefix
 		out += "]"
+
+	elif isinstance(a, dict):
+		out += "{\n" + line_prefix
+		for k,v in a.items():
+			out += "\t" + str(k) + "\t => " + pout(v, "\t    ", True) + ",\n" + line_prefix
+		out += "}"
+
 	elif isinstance(a, (float, np.float64)):
-		out = line_prefix + str(round(a,3))
+		out += str(round(a,3))
+
 	else:
-		out = line_prefix + str(a)
+		out += str(a)
+	
 	return out
 
 def pprint(a):

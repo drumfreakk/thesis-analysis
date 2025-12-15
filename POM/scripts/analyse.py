@@ -219,3 +219,22 @@ def combine_runs(title, pics, save, show):
 	create_hist(ax, title, save, show, True)
 
 
+def video(title, pics, save, show):
+	sizes = []
+	sma, n, density = 0,0,0
+	for pic in pics:
+		drops = get_droplets('.', pic, False, True)
+		sizes += drops["round_sizes"]
+		density += drops["density"]
+		sma += int(input("Number of smectic shape-changing droplets: "))
+		n += int(input("Number of nematic shape-changing droplets: "))
+
+	print(len(sizes), "droplets, with", round(n*100/len(sizes),1), "% shape-changing")
+
+	d = {"sizes": sizes, "density": density/len(pics), "nematic": n, "smectic": sma}
+
+	with open("saves/" + title + " video.bin", "wb") as f:
+		pickle.dump(d, f)
+
+
+

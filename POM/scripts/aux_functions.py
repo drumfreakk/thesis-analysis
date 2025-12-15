@@ -13,7 +13,7 @@ def create_hist(ax, title, save, show, legend=True):
 	if legend:
 		ax.legend()
 	ax.set_ylabel("Frequency")
-	ax.set_xlabel("Diameter ($\\mathrm{\\mu m}$)")
+	ax.set_xlabel("Droplet diameter ($\\mathrm{\\mu m}$)")
 
 	create_plot(title, save, show, legend)
 

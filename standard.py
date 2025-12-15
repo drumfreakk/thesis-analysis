@@ -26,7 +26,7 @@ def pout(a, line_prefix = "", skip_first_prefix=False):
 	if isinstance(a, (list,np.ndarray)):
 		out += "[\n" + line_prefix
 		for i in a:
-			out += "\t" + pout(i, '\t') + ",\n" + line_prefix
+			out += "\t" + pout(i, '\t', True) + ",\n" + line_prefix
 		out += "]"
 
 	elif isinstance(a, dict):
@@ -43,8 +43,8 @@ def pout(a, line_prefix = "", skip_first_prefix=False):
 	
 	return out
 
-def pprint(a):
-	print(pout(a))
+def pprint(a, line_prefix=""):
+	print(pout(a,line_prefix))
 
 
 

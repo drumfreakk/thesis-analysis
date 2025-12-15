@@ -27,3 +27,8 @@ def create_plot(title, save, show, legend=True):
 	if show:
 		plt.show()
 	plt.close()
+
+
+def get_percentage(d):
+	return 0 if len(d['sizes']) == 0 else d['shapechange'] / len(d['sizes'])
+

@@ -12,6 +12,8 @@ import numpy as np
 import scipy
 import sys
 
+mpl.rc('image', cmap='gray')
+
 def generate_plots(filename):
 	xls = pd.ExcelFile(filename)
 	
@@ -32,8 +34,10 @@ def generate_plots(filename):
 			peaks = [intensity_df.index[i] for i in peaks_index]
 			temp_means.append(peaks)
 #		print(temp_means)
-		
+	
+
 		fig, ax = plt.subplots()
+#		ax.set_cmap("gnuplot2")
 		ax.plot(intensity_df)	
 
 		ax.set_xlim([10**0,10**4])
@@ -56,8 +60,11 @@ def generate_plots(filename):
 		else:
 			y_up = 2.5
 		sub_ax.set_ylim([0, y_up])
+		sub_ax.xaxis.set_ticks([10**0, 10**2, 10**4, 10**6])
+		sub_ax.set_xlabel("Lag time ($\\mathrm{\\mu s}$)")
+		sub_ax.set_ylabel("Correlation")
 
-		plt.savefig("graphs/" + filename.split(".")[0] + " - " + sheet + ".png", dpi=600)
+		plt.savefig("graphs/" + filename.split(".")[0] + " - " + sheet + ".png")
 #		plt.show()
 		plt.close()
 

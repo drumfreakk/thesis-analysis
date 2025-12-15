@@ -1,9 +1,4 @@
 
-import sys
-sys.path.insert(1, '../')
-import standard
-import standard.tex_friendly
-
 import os
 
 import numpy as np
@@ -14,26 +9,11 @@ import matplotlib.patches as mpatches
 from scipy import ndimage
 
 import skimage as ski
-from skimage.measure import label, regionprops
+from skimage.measure import label, regionprops 
 
+import pickle
 
-def get_magnification(fname):
-	return fname.split('.')[-2].split('-')[-1]
-
-def create_plot(sizes, title, save, show):
-
-	plt.legend()
-	plt.ylabel("Frequency")
-	plt.xlabel("Diameter ($\\mathrm{\\mu m}$)")
-	
-	plt.tight_layout()
-	plt.title(tex_friendly(title))
-	
-	if save:
-		plt.savefig("graphs/" + title + ".pdf", dpi=600)
-	if show:
-		plt.show()
-	plt.close()
+from scripts.aux_functions import *
 
 def get_droplets(path, name, save=False, show=True):
 	print("Processing", name)
@@ -154,26 +134,81 @@ def get_droplets(path, name, save=False, show=True):
 	
 	### Show the picture
 	
+	prefix = name.split('.')[0]
 	
 	axs[0].set_axis_off()
 	
 	axs[1].hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
-	axs[1].set_ylabel("Frequency")
-	axs[1].set_xlabel("Diameter ($\\mathrm{\\mu m}$)")
-	
-	
 	axs[1].axvline(np.mean(sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
-
-	plt.legend()
-	plt.tight_layout()
-	prefix = name.split('.')[0]
-	plt.title(tex_friendly(prefix))
-	if save:
-		plt.savefig("graphs/" + prefix + ".pdf", dpi=600)
-	if show:
-		plt.show()
-	plt.close()
+	
+	create_hist(axs[1], prefix, save, show, True)
 
 	return {"round": round_droplets, "elongated": elongated_droplets,\
 			"round_sizes": sizes, "density": density}
+
+
+def combine_pictures(name, path, pictures, save, show):
+	sizes = []
+	density = 0
+	for pic in pictures:
+		drops = get_droplets(path, pic, False, False)
+		sizes += drops["round_sizes"]
+		density += drops["density"]
+
+	d = {"sizes": sizes, "density": density/len(pictures)}
+	with open("saves/" + name + ".bin", "wb") as f:
+		pickle.dump(d, f)
+
+	print("Mean density:", round(density / len(pictures), 2), "droplets/mm^2 (ignoring focal plane depth)")
+
+	fig, ax = plt.subplots()
+	ax.hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
 	
+	ax.axvline(np.mean(sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
+	
+	create_hist(ax, name, save, show)
+
+def combine_runs(title, pics, save, show):
+	sizes = []
+	densities = []
+	for i in pics:
+		with open(i, "rb") as f:
+			data = pickle.load(f)
+			sizes.append(data['sizes'])
+			densities.append(data['density'])
+	
+	all_sizes = []
+	for i in range(len(sizes)):
+		all_sizes += sizes[i]
+
+	_,binedges = np.histogram(all_sizes,bins='doane')
+	bincenters = 0.5*(binedges[1:]+binedges[:-1])
+
+	# [ [bin_0 #1, #2, #3], [bin_1 #1, #2, #3], ...]
+	# more strictly frequency per bin
+	mean_per_bin = [[0 for j in sizes] for i in bincenters]
+
+	for i in range(len(sizes)):
+		d = np.digitize(sizes[i], binedges)
+		for j in range(len(d)):
+			if d[j]-1 == len(mean_per_bin):
+				d[j] = d[j]-1
+			mean_per_bin[d[j]-1][i] += sizes[i][j]
+		for k in range(len(mean_per_bin)):
+			mean_per_bin[k][i] = mean_per_bin[k][i]/len(d)
+
+	means = np.asarray([np.mean(i) for i in mean_per_bin])
+	s = sum(means)
+	means = means/s
+
+	stds  = np.asarray([np.std(i) for i in mean_per_bin])/s
+
+	fig, ax = plt.subplots()
+
+	width = (max(all_sizes)-min(all_sizes))/len(bincenters)
+	ax.bar(bincenters, means, width=width, yerr=stds)
+	ax.set_ylim(bottom=0)
+
+	create_hist(ax, title, save, show, False)
+
+

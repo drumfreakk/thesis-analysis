@@ -1,4 +1,8 @@
 
+import sys
+sys.path.insert(1, '../')
+import standard as std
+
 import os
 
 import numpy as np
@@ -169,11 +173,6 @@ def combine_pictures(name, path, pictures, save, show):
 	create_hist(ax, name, save, show)
 
 def combine_runs(title, pics, save, show):
-	import sys
-	sys.path.insert(1, '../')
-	import standard as std
-
-
 	sizes = []
 	densities = []
 	for i in pics:

@@ -169,6 +169,11 @@ def combine_pictures(name, path, pictures, save, show):
 	create_hist(ax, name, save, show)
 
 def combine_runs(title, pics, save, show):
+	import sys
+	sys.path.insert(1, '../')
+	import standard as std
+
+
 	sizes = []
 	densities = []
 	for i in pics:
@@ -206,9 +211,12 @@ def combine_runs(title, pics, save, show):
 	fig, ax = plt.subplots()
 
 	width = (max(all_sizes)-min(all_sizes))/len(bincenters)
-	ax.bar(bincenters, means, width=width, yerr=stds)
+	ax.bar(bincenters, means, width=width, yerr=stds,\
+		   label="n = " + str(len(sizes)) + "\n" + str(len(all_sizes)) + " droplets")
 	ax.set_ylim(bottom=0)
+	
+	ax.axvline(np.mean(all_sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(all_sizes))) + " \\mathrm{\\mu m}$")
 
-	create_hist(ax, title, save, show, False)
+	create_hist(ax, title, save, show, True)
 
 

@@ -1,8 +1,7 @@
 
 import sys
 sys.path.insert(1, '../')
-import standard
-from standard import tex_friendly
+import standard as std
 
 import matplotlib.pyplot as plt 
 
@@ -21,7 +20,7 @@ def create_hist(ax, title, save, show, legend=True):
 def create_plot(title, save, show, legend=True):
 
 	plt.tight_layout()
-	plt.title(tex_friendly(title))
+	plt.title(std.tex_friendly(title))
 	
 	if save:
 		plt.savefig("graphs/" + title + ".png")

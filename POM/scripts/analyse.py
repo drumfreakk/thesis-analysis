@@ -73,7 +73,9 @@ def get_droplets(path, name, save=False, show=True):
 	axs[0].text(50, img_thresh.shape[0] - 120,\
 				"\\boldmath$" + str(length_scalebar_um) + " \\mathrm{\\mu m}$",\
 				color='white', size='large')
-	
+
+	axs[0].text(3000,3500, "Spherical droplets", color='m', size='large')
+	axs[0].text(3000,3600, "Weirdly shaped or shape-changing droplets", color='g', size='large')
 	
 	round_droplets = []
 	elongated_droplets = []
@@ -107,7 +109,7 @@ def get_droplets(path, name, save=False, show=True):
 	
 	for region in round_droplets:
 		minr, minc, maxr, maxc = region.bbox
-		color = 'red'
+		color = 'm'
 		
 		circ = mpatches.Circle((region.centroid[1]/spacing, region.centroid[0]/spacing),\
 								radius=region.equivalent_diameter_area/(2*spacing),\
@@ -119,7 +121,7 @@ def get_droplets(path, name, save=False, show=True):
 	for region in elongated_droplets:
 		minr, minc, maxr, maxc = region.bbox
 	
-		color = 'green'
+		color = 'g'
 		rect = mpatches.Rectangle((minc-1, minr-1), maxc - minc, maxr - minr,
 									  fill=False, edgecolor=color, linewidth=1)
 		axs[0].add_patch(rect)
@@ -143,7 +145,7 @@ def get_droplets(path, name, save=False, show=True):
 	axs[0].set_axis_off()
 	
 	axs[1].hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
-	axs[1].axvline(np.mean(sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
+	axs[1].axvline(np.mean(sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
 	
 	create_hist(axs[1], prefix, save, show, True)
 
@@ -168,7 +170,7 @@ def combine_pictures(name, path, pictures, save, show):
 	fig, ax = plt.subplots()
 	ax.hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
 	
-	ax.axvline(np.mean(sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
+	ax.axvline(np.mean(sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
 	
 	create_hist(ax, name, save, show)
 
@@ -214,7 +216,7 @@ def combine_runs(title, pics, save, show):
 		   label="n = " + str(len(sizes)) + "\n" + str(len(all_sizes)) + " droplets")
 	ax.set_ylim(bottom=0)
 	
-	ax.axvline(np.mean(all_sizes), color='r',  linestyle='dashed', label="Mean = $" + str(round(np.mean(all_sizes))) + " \\mathrm{\\mu m}$")
+	ax.axvline(np.mean(all_sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(all_sizes))) + " \\mathrm{\\mu m}$")
 
 	create_hist(ax, title, save, show, True)
 

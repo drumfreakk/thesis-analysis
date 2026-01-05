@@ -13,6 +13,8 @@ show = True
 match sys.argv[1]:
 	case "time":
 		# ./main.py time <rate> <T0> <T1>
+		# Convert a temperature change rate and two temperatures
+		# into a time in the video (16x)
 		
 		rate = float(sys.argv[2])	# deg C / min
 		t0 = float(sys.argv[3])		# deg C
@@ -75,10 +77,32 @@ match sys.argv[1]:
 		print("Stats on videos:", title)
 		stats_vids(title, saves, True, show)
 
-	case _:
-		# ./main.py <pic>
+	case "single":
+		# ./main.py single <pic>
 		# Analyze an individual picture
 	
-		get_droplets(sys.argv[1], save, show)
+		get_droplets(sys.argv[2], sys.argv[3], save, show)
 		
-	
+	case "help":
+		# ./main.py help
+		# Show this help
+		
+		lines = []
+		with open(sys.argv[0], "r") as fd:
+			lines = [line.rstrip().lstrip() for line in fd]
+		printing = False
+		for l in lines:
+			command = False
+			if len(l) > 0:
+				if l[0] == "#":
+					if l.startswith("# ./main.py"):
+						printing = True
+						command = True
+						print()
+					if printing:
+						if not command:
+							print(end="\t")
+						print(l[2:])
+
+
+

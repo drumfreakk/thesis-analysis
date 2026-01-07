@@ -78,11 +78,24 @@ match sys.argv[1]:
 		stats_vids(title, saves, True, show)
 
 	case "single":
-		# ./main.py single <pic>
+		# ./main.py single <path_prefix> <filename>
 		# Analyze an individual picture
-	
-		get_droplets(sys.argv[2], sys.argv[3], save, show)
 		
+		print("Not saving anything")
+		get_droplets(sys.argv[2], sys.argv[3], False, show)
+
+	case "video_size_distr":
+		# ./main.py video_size_distr <sample name> <video>
+		# Extract the droplet size distribution over time from a video.
+
+		video_sizes(sys.argv[2], sys.argv[3], save, show)
+
+	case "video_sizes":
+		# ./main.py video_sizes <sample> <saves>
+		# Average multiple video size distributions from "video_size_distr"
+
+		combine_video_sizes(sys.argv[2], sys.argv[3:], save, show)
+
 	case "help":
 		# ./main.py help
 		# Show this help

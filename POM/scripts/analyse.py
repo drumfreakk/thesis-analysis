@@ -15,6 +15,8 @@ from scipy import ndimage
 import skimage as ski
 from skimage.measure import label, regionprops 
 
+import pims
+
 import pickle
 
 from scripts.aux_functions import *
@@ -27,29 +29,17 @@ def get_droplets(path, name, save=False, show=True):
 		return {"round": [], "elongated": [], "round_sizes": [], "density": np.nan}
 		return
 
-	# Assume the pixel spacing is isotropic
-	# The spacing is in um/px
-	match get_magnification(name):
-		case '5x':
-			spacing = 1/2.03
-			length_scalebar_um = 50
-		case '10x':
-			spacing = 1/4.09
-			length_scalebar_um = 50
-		case '20x':
-			spacing = 1/8.17
-			length_scalebar_um = 50
-		case '40x':
-			spacing = 1/16.56
-			length_scalebar_um = 20
-		case _:
-			spacing = 1
-			length_scalebar_um = 0
-			print("WARNING: No magnification found, guessing pixel size")
-		
 	### Load and threshold the picture
 	
 	img_original = ski.io.imread(os.path.join(path, name))
+	
+	return droplet_analysis(name.split('.')[0], img_original, get_magnification(name), save, show)
+
+def droplet_analysis(name, img_original, magnification, save, show):
+	# Assume the pixel spacing is isotropic
+	# The spacing is in um/px
+	spacing, length_scalebar_um = get_scales(magnification)
+
 	img_gray = ski.color.rgb2gray(ski.util.img_as_int(img_original))
 	
 	threshold = ski.filters.threshold_yen(img_gray)
@@ -63,19 +53,20 @@ def get_droplets(path, name, save=False, show=True):
 	black = ski.util.dtype_limits(img_thresh)[0]
 	label_image = label(img_thresh, background=black)
 	
-	fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(12, 12), height_ratios=[3,1])
-	axs[0].imshow(img_original)
+	if save or show:
+		fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(12, 12), height_ratios=[3,1])
+		axs[0].imshow(img_original)
+		
+		length_scalebar = length_scalebar_um/spacing
+		scalebar = mpatches.Rectangle((50, img_thresh.shape[0] - 100),\
+									  length_scalebar, 50, color='white')
+		axs[0].add_patch(scalebar)
+		axs[0].text(50, img_thresh.shape[0] - 120,\
+					"\\boldmath$" + str(length_scalebar_um) + " \\mathrm{\\mu m}$",\
+					color='white', size='large')
 	
-	length_scalebar = length_scalebar_um/spacing
-	scalebar = mpatches.Rectangle((50, img_thresh.shape[0] - 100),\
-								  length_scalebar, 50, color='white')
-	axs[0].add_patch(scalebar)
-	axs[0].text(50, img_thresh.shape[0] - 120,\
-				"\\boldmath$" + str(length_scalebar_um) + " \\mathrm{\\mu m}$",\
-				color='white', size='large')
-
-	axs[0].text(3000,3500, "Spherical droplets", color='m', size='large')
-	axs[0].text(3000,3600, "Weirdly shaped or shape-changing droplets", color='g', size='large')
+		axs[0].text(3000,3500, "Spherical droplets", color='m', size='large')
+		axs[0].text(3000,3600, "Weirdly shaped or shape-changing droplets", color='g', size='large')
 	
 	round_droplets = []
 	elongated_droplets = []
@@ -106,32 +97,33 @@ def get_droplets(path, name, save=False, show=True):
 	
 	
 	### Display the droplet outlines
-	
-	for region in round_droplets:
-		minr, minc, maxr, maxc = region.bbox
-		color = 'm'
+
+	if save or show:
+		for region in round_droplets:
+			minr, minc, maxr, maxc = region.bbox
+			color = 'm'
+			
+			circ = mpatches.Circle((region.centroid[1]/spacing, region.centroid[0]/spacing),\
+									radius=region.equivalent_diameter_area/(2*spacing),\
+									fill=False, edgecolor=color, linewidth=1)
+			axs[0].add_patch(circ)
 		
-		circ = mpatches.Circle((region.centroid[1]/spacing, region.centroid[0]/spacing),\
-								radius=region.equivalent_diameter_area/(2*spacing),\
-								fill=False, edgecolor=color, linewidth=1)
-		axs[0].add_patch(circ)
-	
-	#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
-	
-	for region in elongated_droplets:
-		minr, minc, maxr, maxc = region.bbox
-	
-		color = 'g'
-		rect = mpatches.Rectangle((minc-1, minr-1), maxc - minc, maxr - minr,
-									  fill=False, edgecolor=color, linewidth=1)
-		axs[0].add_patch(rect)
+		#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
 		
-	#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
+		for region in elongated_droplets:
+			minr, minc, maxr, maxc = region.bbox
+		
+			color = 'g'
+			rect = mpatches.Rectangle((minc-1, minr-1), maxc - minc, maxr - minr,
+										  fill=False, edgecolor=color, linewidth=1)
+			axs[0].add_patch(rect)
+			
+		#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
 	
 	density = (len(elongated_droplets) + len(round_droplets))* 10**6 / \
 		  	  (img_gray.shape[0]*img_gray.shape[1]*spacing**2)
 
-	print("Average droplet density:", density, "droplets / mm^2 (ignoring focal plane depth)\n")
+	print("Average droplet density:", round(density,2), "droplets / mm^2 (ignoring focal plane depth)\n")
 
 	sizes = []
 	for drop in round_droplets:
@@ -139,15 +131,13 @@ def get_droplets(path, name, save=False, show=True):
 	
 	
 	### Show the picture
-	
-	prefix = name.split('.')[0]
-	
-	axs[0].set_axis_off()
-	
-	axs[1].hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
-	axs[1].axvline(np.mean(sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
-	
-	create_hist(axs[1], prefix, save, show, True)
+	if save or show:	
+		axs[0].set_axis_off()
+		
+		axs[1].hist(sizes, bins='doane', density=True, label="n = " + str(len(sizes)))
+		axs[1].axvline(np.mean(sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(sizes))) + " \\mathrm{\\mu m}$")
+		
+		create_hist(axs[1], name, save, show, True)
 
 	return {"round": round_droplets, "elongated": elongated_droplets,\
 			"round_sizes": sizes, "density": density}
@@ -183,12 +173,7 @@ def combine_runs(title, pics, save, show):
 			sizes.append(data['sizes'])
 			densities.append(data['density'])
 	
-	all_sizes = []
-	for i in range(len(sizes)):
-		all_sizes += sizes[i]
-
-	_,binedges = np.histogram(all_sizes,bins='doane')
-	bincenters = 0.5*(binedges[1:]+binedges[:-1])
+	binedges,bincenters = bin_sizes(sizes)
 
 	# [ [bin_0 #1, #2, #3], [bin_1 #1, #2, #3], ...]
 	# more strictly frequency per bin
@@ -331,10 +316,101 @@ def stats_vids(title, saves, save, show):
 	create_plot(title, save, show, True)
 
 
+def bin_sizes(sizes):
+	all_sizes = []
+	for i in range(len(sizes)):
+		all_sizes += sizes[i]
+
+	binedges = np.histogram_bin_edges(all_sizes,bins='doane')
+
+	bincenters = 0.5*(binedges[1:]+binedges[:-1])
+	
+	return (binedges, bincenters)
 
 
+def video_sizes(name, file, save, show):
+	fname = "saves/video_distr_" + name + ".bin"
+	try:
+		with open(fname, "rb") as f:
+			data = pickle.load(f)
+		print("Loaded existing data")
+	except:
+		vid = pims.ImageIOReader(file)
+	
+		rate = 16 * 1 # Do something every 16 frames, or every 1 sec at 16 fps
+	
+		data = {"index": [], "round": [], "elongated": [], "round_sizes": [], "density": []}
+	
+		for i in range(0,len(vid), rate):
+			print(i, "secs =", round(i/60,1), "mins")
+			droplets = droplet_analysis(name, vid[i], get_magnification(file), False, False)
+#			data['round'].append(droplets['round'])
+#			data['elongated'].append(droplets['elongated'])
+			data['round_sizes'].append(droplets['round_sizes'])
+			data['density'].append(droplets['density'])
+			data['index'].append(i)
+
+		with open(fname, "wb") as f:
+			pickle.dump(data, f)
+
+#	std.pprint(data)
+
+	fig, ax = plt.subplots()
+
+	binedges,bincenters = bin_sizes(data['round_sizes'])
+	
+	binedges[0] -= 1
+	binedges[-1] += 1
+
+	freqs = []
+	for s in data['round_sizes']:
+		d = np.bincount(np.digitize(s, binedges))[1:]
+		f = d/sum(d)
+		while len(f) < len(bincenters):
+			f = np.append(f, 0)
+		freqs.append(f)
+
+	# Average the first n, use those to normalise all others
+	n = 2
+	norm = np.copy(freqs[0])
+	for i in range(1,2):
+		for j in range(len(freqs[0])):
+			norm[j] += freqs[i][j]
+	norm = norm/n
+
+	freqs_norm = np.array([f - norm for f in freqs])
+
+	max_f = 0
+	min_f = 1000
+
+	for f in freqs_norm:
+		for y in f:
+			if y < min_f:
+				min_f = y
+			if y > max_f:
+				max_f = y
+	print(min_f, max_f)
+
+	im = ax.imshow(np.transpose(freqs_norm), interpolation="none")
+#	scalebar = mpatches.Rectangle((2, 2), 5, 5, color=im.cmap(im.norm(min_f)))
+#	ax.add_patch(scalebar)
+#	scalebar2 = mpatches.Rectangle((7, 2), 5, 5, color=im.cmap(im.norm(max_f)))
+#	ax.add_patch(scalebar2)
+
+	ax.set_xlabel("Time (s/16)")
+	ax.set_ylabel("Droplet diameter ($\\mathrm{\\mu m}$)")
+
+	create_plot(name, save, show, False)
 
 
+def combine_video_sizes(title, files, save, show):
+	sizes = []
+	for file in files: 
+		with open(file, "rb") as f:
+			sizes.append(pickle.load(f)['round_sizes'])
+	
+	binedges,bincenters = bin_sizes(np.concat(sizes))
+	
 
 
 

@@ -12,11 +12,16 @@ import numpy as np
 import scipy
 import sys
 
+from hashlib import sha256
+
 mpl.rc('image', cmap='gray')
 
 def generate_plots(filename):
 	xls = pd.ExcelFile(filename)
-	
+
+	with open("hashes", "r") as f:
+		hashes = f.read().splitlines()
+
 	for sheet in xls.sheet_names:
 		used_cols = "I:L"
 		if sheet=="PBS 8.4":
@@ -24,6 +29,10 @@ def generate_plots(filename):
 
 		intensity_df = pd.read_excel(xls, sheet, index_col=0, usecols=used_cols, skiprows=12)
 		intensity_df = intensity_df.dropna(how='any')
+	
+		h = sha256(intensity_df.to_string().encode()).hexdigest()
+		if h in hashes:
+			continue
 		
 		correlogram_df = pd.read_excel(xls, sheet, index_col=0, usecols="A:D")
 		correlogram_df = correlogram_df.dropna(how='any')
@@ -67,6 +76,9 @@ def generate_plots(filename):
 		plt.savefig("graphs/" + filename.split(".")[0] + " - " + sheet + ".png")
 #		plt.show()
 		plt.close()
+		
+		with open("hashes", "a") as f:
+			f.write(h + "\n")
 
 if len(sys.argv) != 2:
 	print("Use a proper argument")

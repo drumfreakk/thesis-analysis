@@ -7,7 +7,32 @@ import matplotlib.pyplot as plt
 
 
 def get_magnification(fname):
-	return fname.split('.')[-2].split('-')[-1]
+	try:
+		mag = fname.split('.')[-2].split('-')[-1]
+	except:
+		mag = input("Magnification? ")
+	return mag
+
+def get_scales(magnification):
+	match magnification:
+		case '5x':
+			spacing = 1/2.03
+			length_scalebar_um = 50
+		case '10x':
+			spacing = 1/4.09
+			length_scalebar_um = 50
+		case '20x':
+			spacing = 1/8.17
+			length_scalebar_um = 50
+		case '40x':
+			spacing = 1/16.56
+			length_scalebar_um = 20
+		case _:
+			spacing = 1
+			length_scalebar_um = 0
+			print("WARNING: No magnification found, guessing pixel size")
+	return (spacing, length_scalebar_um)
+	
 
 def create_hist(ax, title, save, show, legend=True):
 	if legend:

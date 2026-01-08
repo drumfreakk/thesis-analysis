@@ -21,11 +21,11 @@ from scripts.aux_functions import *
 from scripts.image_analysis import *
 
 
-def combine_pictures(name, path, pictures, save, show):
+def combine_pictures(name, pictures, save, show):
 	sizes = []
 	density = 0
 	for pic in pictures:
-		drops = get_droplets(path, pic, False, False)
+		drops = get_droplets(name + pic.split('/')[-1], pic, False, False)
 		sizes += drops["round_sizes"]
 		density += drops["density"]
 

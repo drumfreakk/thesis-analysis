@@ -33,7 +33,7 @@ def video(title, pics, save, show):
 	s = {"sizes": [], "shapechange": 0}
 	density = 0
 	for pic in pics:
-		drops = get_droplets('.', pic, False, True)
+		drops = get_droplets("Video analysis: " + pic.split("/")[-1], pic, False, True)
 		sizes += drops["round_sizes"]
 		density += drops["density"]
 

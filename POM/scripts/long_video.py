@@ -111,10 +111,8 @@ def combine_video_sizes(title, files, save, show):
 	all_sizes = []
 	for file in files: 
 		with open(file, "rb") as f:
-			#data,rate = pickle.load(f)
-			#data = data['round_sizes']
-			data = pickle.load(f)['round_sizes']
-			rate = 16
+			data,rate = pickle.load(f)
+			data = data['round_sizes']
 			sizes.append(data)
 			all_sizes += data
 
@@ -151,7 +149,6 @@ def combine_video_sizes(title, files, save, show):
 
 	freqs_norm = np.array([f - norm for f in avg_freq])
 
-
 	make_vid_plot(np.transpose(freqs_norm), title, (binedges[0], binedges[-1]), rate, save, show)
 
 def time_stats(savefile):
@@ -167,19 +164,19 @@ def time_stats(savefile):
 
 	ks = stats.ks_2samp(to_check[0], to_check[1])
 	
-	print(ks.statistic)
-	print(ks.pvalue)
-	print(ks.statistic_location)
-	print(ks.statistic_sign)
+	print("KS Statistic:     ",ks.statistic)
+	print("P-Value:          ",ks.pvalue)
+	print("KS Stat location: ",ks.statistic_location)
+	print("KS Stat sign:     ",ks.statistic_sign)
 
 
 	bincenters = 0.5*(binedges[1:]+binedges[:-1])
 	width = (binedges[-1]-binedges[0])/(3*len(bincenters))
 
 	fig, ax = plt.subplots()
-	ax.bar(bincenters-width/2, to_check[0], width=width, label="$t=" + str(times[0]*rate/60) + "$ mins") 
-	ax.bar(bincenters+width/2, to_check[1], width=width, label="$t=" + str(times[1]*rate/60) + "$ mins") 
-	create_hist(ax, title, True, True, True)
+	ax.bar(bincenters-width/2, to_check[0], width=width, color="b", label="$t=" + str(times[0]*rate/60) + "$ mins") 
+	ax.bar(bincenters+width/2, to_check[1], width=width, color="m", label="$t=" + str(times[1]*rate/60) + "$ mins") 
+	create_hist(ax, title + " - distribution", True, True, True)
 
 
 

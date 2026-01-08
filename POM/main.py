@@ -59,7 +59,7 @@ match sys.argv[1]:
 		title = sys.argv[2]
 		pics = sys.argv[3:]
 		print("Combine pictures:", title)
-		combine_pictures(title, '.', pics, True, show)
+		combine_pictures(title, pics, True, show)
 	
 	
 	case "combine_samples":
@@ -100,11 +100,10 @@ match sys.argv[1]:
 		stats_vids(title, saves, True, show)
 
 	case "single":
-		# ./main.py single <path_prefix> <filename>
+		# ./main.py single <title> <filename>
 		# Analyze an individual picture
 		
-		print("Not saving anything")
-		get_droplets(sys.argv[2], sys.argv[3], False, show)
+		get_droplets(sys.argv[2], sys.argv[3], save, show)
 
 	case "video_size_distr":
 		# ./main.py video_size_distr <sample name> <video>

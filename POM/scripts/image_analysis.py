@@ -25,22 +25,20 @@ from scripts.aux_functions import *
 
 from time import time
 
-def get_droplets(path, name, save=False, show=True):
+def get_droplets(name, file, save=False, show=True):
 	print("Processing", name)
 	
-	if name.split('.')[-1] not in ['tif', 'png']:
+	if file.split('.')[-1] not in ['tif', 'png']:
 		print("\tNot an image, quitting")
 		return {"round": [], "elongated": [], "round_sizes": [], "density": np.nan}
 		return
 
 	### Load and threshold the picture
 	
-	img_original = ski.io.imread(os.path.join(path, name))
+	img_original = ski.io.imread(file)
 
-	mag = get_magnification(name)
+	mag = get_magnification(file)
 
-	name = name.split('.')[0].replace('/','_')
-	
 	return droplet_analysis(name, img_original, mag, save, show)
 
 def droplet_analysis(name, img_original, magnification, save, show, gamma=0.5):

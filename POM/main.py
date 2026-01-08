@@ -88,13 +88,19 @@ match sys.argv[1]:
 		# ./main.py video_size_distr <sample name> <video>
 		# Extract the droplet size distribution over time from a video.
 
-		video_sizes(sys.argv[2], sys.argv[3], save, show)
+		video_size_distr(sys.argv[2], sys.argv[3], save, show)
 
 	case "video_sizes":
 		# ./main.py video_sizes <sample> <saves>
 		# Average multiple video size distributions from "video_size_distr"
 
 		combine_video_sizes(sys.argv[2], sys.argv[3:], save, show)
+
+	case "time_stats":
+		# ./main.py time_stats <savefile>
+		# Test if distributions are similar from videos from video_sizes
+
+		time_stats(sys.argv[2])
 
 	case "help":
 		# ./main.py help
@@ -116,6 +122,4 @@ match sys.argv[1]:
 						if not command:
 							print(end="\t")
 						print(l[2:])
-
-
 

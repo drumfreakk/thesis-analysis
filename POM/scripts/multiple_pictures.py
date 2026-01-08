@@ -3,8 +3,6 @@ import sys
 sys.path.insert(1, '../')
 import standard as std
 
-import os
-
 import numpy as np
 
 import matplotlib.pyplot as plt 

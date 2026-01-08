@@ -23,7 +23,7 @@ from time import time
 def analyse_video_sizes(name, data, rate, save, show):
 #	std.pprint(data)
 	freqs,binends = bin_videos(data['round_sizes'])
-
+	
 	# Average the first n, use those to normalise all others
 	n = 2
 	norm = np.copy(freqs[0])
@@ -66,15 +66,16 @@ def make_vid_plot(freqs, name, sizes, rate, save, show):
 	norm_map = mcolors.Normalize(vmin=-0.5, vmax=0.5)
 	extent = (-0.5, (rate*len(freqs[0])/60)-0.5,\
 			  sizes[1]-0.5, sizes[0]-0.5) # (l, r, b, t)
-
+	
 	im = ax.imshow(freqs, cmap='coolwarm', norm=norm_map, interpolation="none", extent=extent)
-		
-	ax.axvline(60, color='m', linestyle='dashed', label="Start temperature change")
+
+	if extent[1] >= 60:
+		ax.axvline(60, color='m', linestyle='dashed', label="Start temperature change")
 
 	ax.set_xlabel("Time (minutes)")
 	ax.set_ylabel("Droplet diameter ($\\mathrm{\\mu m}$)")
 
-	fig.colorbar(im, shrink=0.8, label="Fractional increase in frequency relative to $t=0$")
+	fig.colorbar(im, ax=ax, shrink=0.8, label="Fractional increase in frequency relative to $t=0$")
 
 	create_plot(name, save, show, True)
 
@@ -159,7 +160,9 @@ def time_stats(savefile):
 	title = savefile[21:-4]
 	print(title)
 
-	times = (0,int(3600/rate)) # 0 sec and 1h respectively
+	times = [0,int(3600/rate)] # 0 sec and 1h respectively
+	if times[1] >= len(avg_freqs):
+		times[1] = len(avg_freqs)-1
 	to_check = [avg_freqs[i] for i in times]
 
 	ks = stats.ks_2samp(to_check[0], to_check[1])
@@ -174,8 +177,10 @@ def time_stats(savefile):
 	width = (binedges[-1]-binedges[0])/(3*len(bincenters))
 
 	fig, ax = plt.subplots()
-	ax.bar(bincenters-width/2, to_check[0], width=width, color="b", label="$t=" + str(times[0]*rate/60) + "$ mins") 
-	ax.bar(bincenters+width/2, to_check[1], width=width, color="m", label="$t=" + str(times[1]*rate/60) + "$ mins") 
+	ax.bar(bincenters-width/2, to_check[0], width=width, color="b",\
+		   label="$t=" + str(round(times[0]*rate/60,1)) + "$ mins") 
+	ax.bar(bincenters+width/2, to_check[1], width=width, color="m",\
+	       label="$t=" + str(round(times[1]*rate/60,1)) + "$ mins") 
 	create_hist(ax, title + " - distribution", True, True, True)
 
 

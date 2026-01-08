@@ -20,19 +20,6 @@ from scripts.image_analysis import *
 
 from time import time
 
-def bin_sizes(sizes):
-	all_sizes = []
-	for s in sizes:
-		print(s)
-		all_sizes = np.concat([all_sizes, s])
-#		all_sizes += s
-
-	binedges = np.histogram_bin_edges(all_sizes,bins='doane')
-
-	bincenters = 0.5*(binedges[1:]+binedges[:-1])
-	
-	return (binedges, bincenters)
-
 def analyse_video_sizes(name, data, rate, save, show):
 #	std.pprint(data)
 	freqs,binends = bin_videos(data['round_sizes'])
@@ -74,13 +61,13 @@ def bin_videos(data, sizes=None):
 
 
 def make_vid_plot(freqs, name, sizes, rate, save, show):
-	fig, ax = plt.subplots(figsize=(10,5))
+	fig, ax = plt.subplots(figsize=(8,8))
 
-	norm_map = mcolors.Normalize(vmin=-0.3, vmax=0.3)
+	norm_map = mcolors.Normalize(vmin=-0.5, vmax=0.5)
 	extent = (-0.5, (rate*len(freqs[0])/60)-0.5,\
 			  sizes[1]-0.5, sizes[0]-0.5) # (l, r, b, t)
 
-	im = ax.imshow(freqs, norm=norm_map, interpolation="none", extent=extent)
+	im = ax.imshow(freqs, cmap='coolwarm', norm=norm_map, interpolation="none", extent=extent)
 		
 	ax.axvline(60, color='m', linestyle='dashed', label="Start temperature change")
 
@@ -100,7 +87,7 @@ def video_size_distr(name, file, save, show):
 		print("Loaded existing data")
 	except:
 		vid = pims.PyAVReaderTimed(file)
-		rate = 16 * 1 # Do something every 16 frames, or every 1 sec at 16 fps
+		rate = 16 * 1 # Do something every 16 frames, or every 1 sec of video at 16 fps, or every 16 seconds in real life (?)
 	
 		data = {"index": [], "round": [], "elongated": [], "round_sizes": [], "density": []}
 	

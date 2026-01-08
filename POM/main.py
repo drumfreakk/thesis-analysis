@@ -5,10 +5,32 @@ import os
 
 from scripts.analyse import *
 
+def show_help():
+	lines = []
+	with open(sys.argv[0], "r") as fd:
+		lines = [line.rstrip().lstrip() for line in fd]
+	printing = False
+	for l in lines:
+		command = False
+		if len(l) > 0:
+			if l[0] == "#":
+				if l.startswith("# ./main.py"):
+					printing = True
+					command = True
+					print()
+				if printing:
+					if not command:
+						print(end="\t")
+					print(l[2:])
+
 ### Set the picture parameters
 
 save = True
 show = True
+
+if len(sys.argv) < 2:
+	show_help()
+	exit()
 
 match sys.argv[1]:
 	case "time":
@@ -37,7 +59,7 @@ match sys.argv[1]:
 		title = sys.argv[2]
 		pics = sys.argv[3:]
 		print("Combine pictures:", title)
-		combine_pictures(title, '.', pics, False, show)
+		combine_pictures(title, '.', pics, True, show)
 	
 	
 	case "combine_samples":
@@ -106,20 +128,9 @@ match sys.argv[1]:
 		# ./main.py help
 		# Show this help
 		
-		lines = []
-		with open(sys.argv[0], "r") as fd:
-			lines = [line.rstrip().lstrip() for line in fd]
-		printing = False
-		for l in lines:
-			command = False
-			if len(l) > 0:
-				if l[0] == "#":
-					if l.startswith("# ./main.py"):
-						printing = True
-						command = True
-						print()
-					if printing:
-						if not command:
-							print(end="\t")
-						print(l[2:])
+		show_help()
+
+	case _:
+		show_help()
+
 

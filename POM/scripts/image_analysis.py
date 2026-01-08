@@ -36,31 +36,35 @@ def get_droplets(path, name, save=False, show=True):
 	### Load and threshold the picture
 	
 	img_original = ski.io.imread(os.path.join(path, name))
-	
-	return droplet_analysis(name.split('.')[0], img_original, get_magnification(name), save, show)
 
-def droplet_analysis(name, img_original, magnification, save, show):
+	mag = get_magnification(name)
+
+	name = name.split('.')[0].replace('/','_')
+	
+	return droplet_analysis(name, img_original, mag, save, show)
+
+def droplet_analysis(name, img_original, magnification, save, show, gamma=0.5):
 	# Assume the pixel spacing is isotropic
 	# The spacing is in um/px
 	spacing, length_scalebar_um = get_scales(magnification)
 
 	img_gray = ski.color.rgb2gray(ski.util.img_as_int(img_original))
+	img_gamma = ski.exposure.adjust_gamma(img_gray, gamma)
 	
-	threshold = ski.filters.threshold_yen(img_gray)
-	img_thresh = img_gray >= threshold
-	
-	
+	threshold = ski.filters.threshold_yen(img_gamma)
+	img_thresh = img_gamma >= threshold
 	
 	### Identify the droplets
-	
+
 	# Label elements on the picture
 	black = ski.util.dtype_limits(img_thresh)[0]
 	label_image = label(img_thresh, background=black)
 	
 	if save or show:
 		fig, axs = plt.subplots(ncols=1, nrows=2, figsize=(12, 12), height_ratios=[3,1])
-		axs[0].imshow(img_original)
-		
+		#axs[0].imshow(img_thresh, interpolation='none')#img_gray, cmap="gray")
+		axs[0].imshow(img_original, cmap="gray", interpolation='none')
+
 		length_scalebar = length_scalebar_um/spacing
 		scalebar = mpatches.Rectangle((50, img_thresh.shape[0] - 100),\
 									  length_scalebar, 50, color='white')
@@ -76,7 +80,7 @@ def droplet_analysis(name, img_original, magnification, save, show):
 	elongated_droplets = []
 	
 	# Analyze each droplet
-	for region in regionprops(label_image, intensity_image=img_gray, spacing=(spacing,spacing)):
+	for region in regionprops(label_image, intensity_image=img_gamma, spacing=(spacing,spacing)):
 		# Skip regions smaller than 50 square pixels
 		if region.area < 50 * spacing**2:
 			continue
@@ -123,7 +127,7 @@ def droplet_analysis(name, img_original, magnification, save, show):
 			axs[0].add_patch(rect)
 			
 		#	axs[0].text(minc, minr-2, round(region.area_filled,2), color=color)
-	
+
 	density = (len(elongated_droplets) + len(round_droplets))* 10**6 / \
 		  	  (img_gray.shape[0]*img_gray.shape[1]*spacing**2)
 

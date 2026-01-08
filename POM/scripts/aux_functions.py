@@ -5,6 +5,7 @@ import standard as std
 
 import matplotlib.pyplot as plt 
 
+import numpy as np
 
 def get_magnification(fname):
 	try:
@@ -16,22 +17,17 @@ def get_magnification(fname):
 def get_scales(magnification):
 	match magnification:
 		case '5x':
-			spacing = 1/2.03
-			length_scalebar_um = 50
+			return (1/2.03, 50)
 		case '10x':
-			spacing = 1/4.09
-			length_scalebar_um = 50
+			return (1/4.09, 50)
 		case '20x':
-			spacing = 1/8.17
-			length_scalebar_um = 50
+			return (1/8.17, 50)
 		case '40x':
-			spacing = 1/16.56
-			length_scalebar_um = 20
+			return (1/16.56, 20)
 		case _:
-			spacing = 1
-			length_scalebar_um = 0
 			print("WARNING: No magnification found, guessing pixel size")
-	return (spacing, length_scalebar_um)
+			return (1,0)
+	#Returns (spacing, length_scalebar_um)
 	
 
 def create_hist(ax, title, save, show, legend=True):
@@ -56,4 +52,13 @@ def create_plot(title, save, show, legend=True):
 
 def get_percentage(d):
 	return 0 if len(d['sizes']) == 0 else d['shapechange'] / len(d['sizes'])
+
+def bin_sizes(sizes):
+	all_sizes = np.concat(sizes)
+
+	binedges = np.histogram_bin_edges(all_sizes,bins='doane')
+
+	bincenters = 0.5*(binedges[1:]+binedges[:-1])
+	
+	return (binedges, bincenters)
 

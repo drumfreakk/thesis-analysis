@@ -74,6 +74,11 @@ def combine_runs(title, pics, save, show):
 
 	fig, ax = plt.subplots()
 
+	all_sizes = np.concat(sizes)
+#	all_sizes = []
+#	for s in sizes:
+#		all_sizes = np.concat([all_sizes, s])
+	
 	width = (max(all_sizes)-min(all_sizes))/len(bincenters)
 	ax.bar(bincenters, means, width=width, yerr=stds,\
 		   label="n = " + str(len(sizes)) + "\n" + str(len(all_sizes)) + " droplets")

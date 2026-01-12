@@ -102,8 +102,6 @@ def stats_vids(title, saves, save, show):
 #			if p[-1] == 0.0:
 #				p[-1] = 0.1
 
-
-
 	avg_n = [np.asarray([get_percentage(i) for i in n_s]) for n_s in n]
 	avg_s = [np.asarray([get_percentage(i) for i in s_s]) for s_s in s]
 	
@@ -116,17 +114,17 @@ def stats_vids(title, saves, save, show):
 
 	w = 0.2 * np.array(p)
 	if w[0] == 0.0:
-		w[0] = 0.25
+		w[0] = 0.10
 
-	ax.bar(p, mean_n, yerr=std_n, width=w, label="Nematic", color='m')
-	ax.bar(p, mean_s, yerr=std_s, width=w, label="Smectic", color='g')
+	ax.bar(p, mean_n, yerr=std_n, label="Nematic", color='m', align='edge', width=-w)
+	ax.bar(p, mean_s, yerr=std_s, label="Smectic", color='g', align='edge', width=w)
 	
 	ax.set_ylabel("\\% of droplets which are shape-changing")
 	ax.set_xlabel("wt\\% Biotin-X-DHPE")
 
 	ax.set_ylim(bottom=0)
-	ax.set_xlim(left=-0.1)
-	ax.set_xscale('symlog')
+	ax.set_xlim(left=-0.3)
+	ax.set_xscale('symlog', linthresh=1)
 
 	ax.set_xticks(p, p)
 

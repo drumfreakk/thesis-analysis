@@ -21,6 +21,7 @@ def generate_plots(filename):
 
 	with open("hashes", "r") as f:
 		hashes = f.read().splitlines()
+		hashes = [h.split(" ")[0] for h in hashes]
 
 	for sheet in xls.sheet_names:
 		used_cols = "I:L"
@@ -29,7 +30,7 @@ def generate_plots(filename):
 
 		intensity_df = pd.read_excel(xls, sheet, index_col=0, usecols=used_cols, skiprows=12)
 		intensity_df = intensity_df.dropna(how='any')
-	
+		
 		h = sha256(intensity_df.to_string().encode()).hexdigest()
 		if h in hashes:
 			continue
@@ -78,7 +79,7 @@ def generate_plots(filename):
 		plt.close()
 		
 		with open("hashes", "a") as f:
-			f.write(h + "\n")
+			f.write(h + " " + sheet + "\n")
 
 if len(sys.argv) != 2:
 	print("Use a proper argument")

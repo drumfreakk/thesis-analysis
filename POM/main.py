@@ -10,17 +10,15 @@ def show_help():
 		lines = [line.rstrip().lstrip() for line in fd]
 	printing = False
 	for l in lines:
-		command = False
 		if len(l) > 0:
 			if l[0] == "#":
-				if l.startswith("# ./main.py"):
+				if l.startswith("# _script_"):
 					printing = True
-					command = True
-					print()
+					toprint = "\n" + l[2:].replace("_script_", sys.argv[0])
+				else:
+					toprint = "\t" + l[2:]
 				if printing:
-					if not command:
-						print(end="\t")
-					print(l[2:])
+					print(toprint)
 
 ### Set the picture parameters
 
@@ -33,7 +31,7 @@ if len(sys.argv) < 2:
 
 match sys.argv[1]:
 	case "time":
-		# ./main.py time <rate> <T0> <T1>
+		# _script_ time <rate> <T0> <T1>
 		# Convert a temperature change rate and two temperatures
 		# into a time in the video (16x)
 		
@@ -52,7 +50,7 @@ match sys.argv[1]:
 	
 	
 	case "combine_pictures":
-		# ./main.py combine_pictures <sample> <pictures>
+		# _script_ combine_pictures <sample> <pictures>
 		# Combine all pictures given by pictures (can be a wildcard)
 	
 		title = sys.argv[2]
@@ -62,7 +60,7 @@ match sys.argv[1]:
 	
 	
 	case "combine_samples":
-		# ./main.py combine_samples <conditions> <sample_saves>
+		# _script_ combine_samples <conditions> <sample_saves>
 		# Combine multiple saved runs under "conditions"
 	
 		title = sys.argv[2]
@@ -71,7 +69,7 @@ match sys.argv[1]:
 		combine_runs(title, pics, save, show)
 	
 	case "video":
-		# ./main.py video <sample> <pictures>
+		# _script_ video <sample> <pictures>
 		# Combine all pictures given by <pictures> (can be a wildcard),
 		# and prompt to input the number of shape-changing droplets
 
@@ -81,7 +79,7 @@ match sys.argv[1]:
 		video(title, pics, True, show)
 
 	case "shapechange":
-		# ./main.py shapechange <title> <samples>
+		# _script_ shapechange <title> <samples>
 		# Combine multiple samples of the same conditions into one dataset, samples from video
 
 		title = sys.argv[2]
@@ -90,7 +88,7 @@ match sys.argv[1]:
 		combine_vids(title, pics, True, show)
 
 	case "stats_vids":
-		# ./main.py stats_vids <title> <saves>
+		# _script_ stats_vids <title> <saves>
 		# Combine different percentage saves from shapechange into one plot
 		
 		title = sys.argv[2]
@@ -99,31 +97,38 @@ match sys.argv[1]:
 		stats_vids(title, saves, True, show)
 
 	case "single":
-		# ./main.py single <title> <filename>
+		# _script_ single <title> <filename>
 		# Analyze an individual picture
 		
 		get_droplets(sys.argv[2], sys.argv[3], save, show)
 
 	case "video_size_distr":
-		# ./main.py video_size_distr <sample name> <video>
+		# _script_ video_size_distr <sample name> <video>
 		# Extract the droplet size distribution over time from a video.
 
 		video_size_distr(sys.argv[2], sys.argv[3], save, show)
 
 	case "video_sizes":
-		# ./main.py video_sizes <sample> <saves>
+		# _script_ video_sizes <sample> <saves>
 		# Average multiple video size distributions from "video_size_distr"
 
 		combine_video_sizes(sys.argv[2], sys.argv[3:], save, show)
 
 	case "time_stats":
-		# ./main.py time_stats <savefile>
+		# _script_ time_stats <savefile>
 		# Test if distributions are similar from videos from video_sizes
 
 		time_stats(sys.argv[2])
 
+	case "dif_stats":
+		# _script_ dif_stats <file1> <file2>
+		# Quickly compare 2 distributions, compare t=0 from the 2 files 
+		# Files are from video_sizes
+	
+		dif_stats(sys.argv[2], sys.argv[3])
+
 	case "help":
-		# ./main.py help
+		# _script_ help
 		# Show this help
 		
 		show_help()

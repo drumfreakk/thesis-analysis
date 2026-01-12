@@ -75,7 +75,8 @@ def make_vid_plot(freqs, name, sizes, rate, save, show):
 	ax.set_xlabel("Time (minutes)")
 	ax.set_ylabel("Droplet diameter ($\\mathrm{\\mu m}$)")
 
-	fig.colorbar(im, ax=ax, shrink=0.8, label="Fractional increase in frequency relative to $t=0$")
+	fraction = 0.046 * ((extent[2]-extent[3])/(extent[1]-extent[0]))
+	fig.colorbar(im, fraction=fraction, label="Fractional increase in frequency relative to $t=0$")
 
 	create_plot(name, save, show, True)
 
@@ -183,6 +184,26 @@ def time_stats(savefile):
 	       label="$t=" + str(round(times[1]*rate/60,1)) + "$ mins") 
 	create_hist(ax, title + " - distribution", True, True, True)
 
+def dif_stats(file1, file2):
+	data1 = np.load(file1)
+	avg_freqs1 = data1['freqs'][0]
+	data2 = np.load(file2)
+	avg_freqs2 = data2['freqs'][0]
+#	rate1 = data1['rate']
+#	binedges = data['binedges']
+#	title = savefile[21:-4]
 
+#	times = [0,int(3600/rate)] # 0 sec and 1h respectively
+#	if times[1] >= len(avg_freqs):
+#		times[1] = len(avg_freqs)-1
+#	to_check = [avg_freqs[i] for i in times]
+
+	ks = stats.ks_2samp(avg_freqs1, avg_freqs2)
+
+	print("KS Statistic:     ",ks.statistic)
+	print("P-Value:          ",ks.pvalue)
+	print("KS Stat location: ",ks.statistic_location)
+	print("KS Stat sign:     ",ks.statistic_sign)
+	
 
 

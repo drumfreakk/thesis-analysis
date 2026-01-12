@@ -18,3 +18,4 @@ __pycache__
 *.bin
 *.npz
 hashes
+*.dng

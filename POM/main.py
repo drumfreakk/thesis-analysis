@@ -66,8 +66,14 @@ match sys.argv[1]:
 		title = sys.argv[2]
 		pics = sys.argv[3:]
 		print("Combining multiple runs:", title)
-		combine_runs(title, pics, save, show)
-	
+		combine_samples(title, pics, save, show)
+
+	case "compare_samples":
+		# _script_ compare_samples <saves>
+		# Compare samples from "combine_samples", check if their from the same distribution
+
+		compare_samples(sys.argv[2:])
+
 	case "video":
 		# _script_ video <sample> <pictures>
 		# Combine all pictures given by <pictures> (can be a wildcard),
@@ -95,6 +101,14 @@ match sys.argv[1]:
 		saves = sys.argv[3:]
 		print("Stats on videos:", title)
 		stats_vids(title, saves, True, show)
+
+	case "critical_sizes":
+		# _script_ critical_sizes <title> <shapechange save> <combine_samples save>
+		# Determine the smallest droplet sizes that don't fall in to the smallest n % of droplets,
+		# where n is the amount of shapechanging droplets
+
+		critical_sizes(sys.argv[2], sys.argv[3], sys.argv[4])
+
 
 	case "single":
 		# _script_ single <title> <filename>
@@ -127,13 +141,10 @@ match sys.argv[1]:
 	
 		dif_stats(sys.argv[2], sys.argv[3])
 
-	case "help":
+	case _:
 		# _script_ help
 		# Show this help
 		
-		show_help()
-
-	case _:
 		show_help()
 
 

@@ -17,7 +17,7 @@ import pickle
 
 from scripts.aux_functions import *
 from scripts.image_analysis import *
-
+from scripts.long_video import *
 
 def combine_pictures(name, pictures, save, show):
 	sizes = []
@@ -40,15 +40,24 @@ def combine_pictures(name, pictures, save, show):
 	
 	create_hist(ax, name, save, show)
 
-def combine_runs(title, pics, save, show):
+def combine_samples(title, pics, save, show):
 	sizes = []
 	densities = []
+
+	n = 0
+
 	for i in pics:
 		with open(i, "rb") as f:
 			data = pickle.load(f)
 			sizes.append(data['sizes'])
 			densities.append(data['density'])
-	
+		if "video.bin" not in i:
+			n += 1
+
+
+	with open("saves/combine_samples " + title + ".bin", "wb") as f:
+		pickle.dump({"sizes": sizes, "densities": densities}, f)
+
 	binedges,bincenters = bin_sizes(sizes)
 
 	# [ [bin_0 #1, #2, #3], [bin_1 #1, #2, #3], ...]
@@ -79,9 +88,38 @@ def combine_runs(title, pics, save, show):
 	
 	width = (max(all_sizes)-min(all_sizes))/len(bincenters)
 	ax.bar(bincenters, means, width=width, yerr=stds,\
-		   label="n = " + str(len(sizes)) + "\n" + str(len(all_sizes)) + " droplets")
+		   label="n = " + str(n) + "\n" + str(len(all_sizes)) + " droplets")
 	ax.set_ylim(bottom=0)
 	
 	ax.axvline(np.mean(all_sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(all_sizes))) + " \\mathrm{\\mu m}$")
 
 	create_hist(ax, title, save, show, True)
+
+def compare_samples(saves):
+	sizes_from_saves = []
+	names = []
+
+	for i in saves:
+		names.append(' '.join(i.split('.')[0].split()[1:]))
+		with open(i, "rb") as f:
+			data = pickle.load(f)
+			sizes_from_saves.append(np.concat(data['sizes']))
+
+#	rng = np.random.default_rng()
+#	sizes_from_saves = [stats.norm.rvs(size=95) for i in range(2)]
+#	sizes_from_saves = [stats.norm.rvs(size=95), stats.uniform.rvs(size=100)]
+
+	for i in range(len(sizes_from_saves)):
+		for j in range(i+1, len(sizes_from_saves)):
+			ks = stats.ks_2samp(sizes_from_saves[i], sizes_from_saves[j])
+		#	ks = stats.ks_2samp(distrs[0], distrs[1])
+		
+			print(names[i], "vs", names[j])
+			#print("KS Statistic:     ",ks.statistic)
+			print("P-Value:          ",ks.pvalue)
+			#print("KS Stat location: ",ks.statistic_location)
+			#print("KS Stat sign:     ",ks.statistic_sign)
+
+
+
+

@@ -118,6 +118,12 @@ def combine_video_sizes(title, files, save, show):
 			sizes.append(data)
 			all_sizes += data
 
+	# t = 0 and t = 1h = 3600 s = 225
+	raw = [[], []]
+	for s in sizes:
+		raw[0] += s[0]
+		raw[1] += s[225]
+
 	binedges,bincenters = bin_sizes(all_sizes)
 	
 	# Bin each video individually
@@ -138,7 +144,7 @@ def combine_video_sizes(title, files, save, show):
 	avg_freq = np.array([f/3 for f in avg_freq])
 	#print(avg_freq[0])
 
-	np.savez("saves/video_combined " + title + ".npz", freqs=avg_freq, rate=rate, binedges=binedges) 
+	np.savez("saves/video_combined " + title + ".npz", freqs=avg_freq, rate=rate, binedges=binedges, t0=raw[0], t1=raw[1]) 
 	# Plot that
 
 	# Average the first n, use those to normalise all others
@@ -166,7 +172,7 @@ def time_stats(savefile):
 		times[1] = len(avg_freqs)-1
 	to_check = [avg_freqs[i] for i in times]
 
-	ks = stats.ks_2samp(to_check[0], to_check[1])
+	ks = stats.ks_2samp(data['t0'], data['t1'])
 	
 	print("KS Statistic:     ",ks.statistic)
 	print("P-Value:          ",ks.pvalue)

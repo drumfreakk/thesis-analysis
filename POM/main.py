@@ -141,6 +141,13 @@ match sys.argv[1]:
 	
 		dif_stats(sys.argv[2], sys.argv[3])
 
+	case "surface_tension":
+		# _script surface_tension <xlsx>
+		# Calculate the effective surface tension per % and per temperature
+		# Based on measured fiber radii and literature values of K11 and Omega
+
+		surface_tension(sys.argv[2])
+
 	case _:
 		# _script_ help
 		# Show this help

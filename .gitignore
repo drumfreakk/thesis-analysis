@@ -19,3 +19,5 @@ __pycache__
 *.npz
 hashes
 *.dng
+*.eps
+*.svg

@@ -17,9 +17,9 @@ def get_magnification(fname):
 def get_scales(magnification):
 	match magnification:
 		case '5x':
-			return (1/2.03, 50)
+			return (1/2.03, 50) # ~0.5 um/px = 2px/um
 		case '10x':
-			return (1/4.09, 50)
+			return (1/4.09, 50) # ~0.25 um/px = 4px/um
 		case '20x':
 			return (1/8.17, 50)
 		case '40x':
@@ -36,15 +36,18 @@ def create_hist(ax, title, save, show, legend=True):
 	ax.set_ylabel("Frequency")
 	ax.set_xlabel("Droplet diameter ($\\mathrm{\\mu m}$)")
 
-	create_plot(title, save, show, legend)
+	create_plot(title, save, show, False)
 
 def create_plot(title, save, show, legend=True):
 
+	if legend:
+		plt.legend()
+
 	plt.tight_layout()
-	plt.title(std.tex_friendly(title))
+#	plt.title(std.tex_friendly(title))
 	
 	if save:
-		plt.savefig("graphs/" + title + ".png")
+		plt.savefig("graphs/" + title + ".pdf")
 	if show:
 		plt.show()
 	plt.close()

@@ -10,7 +10,7 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "serif",
 	"figure.facecolor": "1.0",
-	"savefig.dpi": 900,
+	"savefig.dpi": 600,
 	"axes.prop_cycle": cycler(color='bgrmcyk')
 })
 

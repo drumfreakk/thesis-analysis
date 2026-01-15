@@ -78,10 +78,12 @@ def droplet_analysis(name, img_original, magnification, save, show, gamma=0.5):
 	# Analyze each droplet
 	for region in regionprops(label_image, intensity_image=img_gamma, spacing=(spacing,spacing)):
 		# Skip regions smaller than 50 square pixels
+		# Radius ~ 2 um at 5x magnification, 1um at 10x, etc
 		if region.area < 50 * spacing**2:
 			continue
 		
 		# Skip regions smaller than 2 um^2
+		# Radius ~ 0.8 um 
 		if region.area < 2:
 			continue
 	

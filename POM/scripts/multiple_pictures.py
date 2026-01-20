@@ -57,6 +57,15 @@ def combine_samples(title, pics, save, show):
 
 	with open("saves/combine_samples " + title + ".bin", "wb") as f:
 		pickle.dump({"sizes": sizes, "densities": densities}, f)
+	
+	fig, ax = plt.subplots()
+
+	combine_samples_graph(sizes, n, ax)
+	
+#	create_hist(ax, title, save, show, True)
+	create_plot(title, save, show, True)
+
+def combine_samples_graph(sizes, n, ax):
 
 	binedges,bincenters = bin_sizes(sizes)
 
@@ -77,9 +86,7 @@ def combine_samples(title, pics, save, show):
 	s = sum(means)
 	means = means/s
 
-	stds  = np.asarray([np.std(i) for i in mean_per_bin])/s
-
-	fig, ax = plt.subplots()
+	#stds  = np.asarray([np.std(i) for i in mean_per_bin])/s
 
 	all_sizes = np.concat(sizes)
 #	all_sizes = []
@@ -87,13 +94,14 @@ def combine_samples(title, pics, save, show):
 #		all_sizes = np.concat([all_sizes, s])
 	
 	width = (max(all_sizes)-min(all_sizes))/len(bincenters)
-	ax.bar(bincenters, means, width=width, yerr=stds,\
+	ax.bar(bincenters, means, width=width,\
 		   label="n = " + str(n) + "\n" + str(len(all_sizes)) + " droplets")
+	# yerr=stds,\
 	ax.set_ylim(bottom=0)
 	
 	ax.axvline(np.mean(all_sizes), color='m',  linestyle='dashed', label="Mean = $" + str(round(np.mean(all_sizes))) + " \\mathrm{\\mu m}$")
 
-	create_hist(ax, title, save, show, True)
+	create_hist(ax, "Histogram", False, False, legend=False, plot=False)
 
 def compare_samples(saves):
 	sizes_from_saves = []

@@ -142,11 +142,29 @@ match sys.argv[1]:
 		dif_stats(sys.argv[2], sys.argv[3])
 
 	case "surface_tension":
-		# _script surface_tension <xlsx>
+		# _script_ surface_tension <xlsx>
 		# Calculate the effective surface tension per % and per temperature
 		# Based on measured fiber radii and literature values of K11 and Omega
 
 		surface_tension(sys.argv[2])
+
+	case "bdhpe_variation_figure":
+		# _script_ bdhpe_variation_figure <0%> <2%> <20%> <50%> <shapechange> <IFT>
+		# Make the figure with the bdhpe variation things
+
+		bdhpe_variation_figure(sys.argv[2:6], sys.argv[6], sys.argv[7])
+
+	case "time_figure":
+		# _script_ time_figure <no addition> <pbs> <neuntravidin>
+		# Make the figure with time dependence
+
+		time_figure(sys.argv[2], sys.argv[3], sys.argv[4])
+
+	case "laplace_pressure":
+		# _script_ laplace_pressure
+		# Make a quick plot about the laplace pressure I thought of
+
+		laplace_pressure()
 
 	case _:
 		# _script_ help

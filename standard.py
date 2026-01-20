@@ -11,7 +11,9 @@ plt.rcParams.update({
     "font.family": "serif",
 	"figure.facecolor": "1.0",
 	"savefig.dpi": 600,
-	"axes.prop_cycle": cycler(color='bgrmcyk')
+	"axes.prop_cycle": cycler(color='bgrmcyk'),
+	"font.serif": "C059",
+	"font.size": 10
 })
 
 #print(plt.rcParams.keys())

@@ -30,13 +30,14 @@ def get_scales(magnification):
 	#Returns (spacing, length_scalebar_um)
 	
 
-def create_hist(ax, title, save, show, legend=True):
+def create_hist(ax, title, save, show, legend=True, plot=True):
 	if legend:
 		ax.legend()
 	ax.set_ylabel("Frequency")
 	ax.set_xlabel("Droplet diameter ($\\mathrm{\\mu m}$)")
 
-	create_plot(title, save, show, False)
+	if plot:
+		create_plot(title, save, show, False)
 
 def create_plot(title, save, show, legend=True):
 

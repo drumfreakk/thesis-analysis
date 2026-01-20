@@ -34,7 +34,9 @@ def analyse_video_sizes(name, data, rate, save, show):
 
 	freqs_norm = np.array([f - norm for f in freqs])
 
-	make_vid_plot(np.transpose(freqs_norm), name, binends, rate, save, show)
+	fig, ax = plt.subplots(figsize=(8,8))
+	make_vid_plot(np.transpose(freqs_norm), name, binends, rate, save, show, fig, ax)
+	create_plot(name, save, show, False)
 
 
 def bin_videos(data, sizes=None):
@@ -58,27 +60,6 @@ def bin_videos(data, sizes=None):
 		freqs.append(f)
 
 	return (freqs, (binedges_orig[0], binedges_orig[-1]))
-
-
-def make_vid_plot(freqs, name, sizes, rate, save, show):
-	fig, ax = plt.subplots(figsize=(8,8))
-
-	norm_map = mcolors.Normalize(vmin=-0.5, vmax=0.5)
-	extent = (-0.5, (rate*len(freqs[0])/60)-0.5,\
-			  sizes[1]-0.5, sizes[0]-0.5) # (l, r, b, t)
-	
-	im = ax.imshow(freqs, cmap='coolwarm', norm=norm_map, interpolation="none", extent=extent)
-
-	if extent[1] >= 60:
-		ax.axvline(60, color='m', linestyle='dashed', label="Start temperature change")
-
-	ax.set_xlabel("Time (minutes)")
-	ax.set_ylabel("Droplet diameter ($\\mathrm{\\mu m}$)")
-
-	fraction = 0.046 * ((extent[2]-extent[3])/(extent[1]-extent[0]))
-	fig.colorbar(im, fraction=fraction, label="Fractional increase in frequency relative to $t=0$")
-
-	create_plot(name, save, show, True)
 
 
 def video_size_distr(name, file, save, show):
@@ -145,8 +126,14 @@ def combine_video_sizes(title, files, save, show):
 	#print(avg_freq[0])
 
 	np.savez("saves/video_combined " + title + ".npz", freqs=avg_freq, rate=rate, binedges=binedges, t0=raw[0], t1=raw[1]) 
-	# Plot that
 
+	# Plot that
+	fig, ax = plt.subplots(figsize=(8,8))
+	combine_video_graph(avg_freq, title, binedges, rate, fig, ax)
+	create_plot(title, save, show, False)
+
+
+def combine_video_graph(avg_freq, title, binedges, rate, fig, ax, colorbar=True, cutoff=False):
 	# Average the first n, use those to normalise all others
 	n = 2
 	norm = np.copy(avg_freq[0])
@@ -157,20 +144,43 @@ def combine_video_sizes(title, files, save, show):
 
 	freqs_norm = np.array([f - norm for f in avg_freq])
 
-	make_vid_plot(np.transpose(freqs_norm), title, (binedges[0], binedges[-1]), rate, save, show)
+	return make_vid_plot(np.transpose(freqs_norm), title, (binedges[0], binedges[-1]), rate, True, True, fig, ax, colorbar, cutoff)
+	
+
+def make_vid_plot(freqs, name, sizes, rate, save, show, fig, ax, colorbar=True, cutoff=False):
+
+	norm_map = mcolors.Normalize(vmin=-0.5, vmax=0.5)
+	cmap = 'coolwarm'
+
+	if cutoff:
+		fnew = []
+		for f in freqs:
+			fnew.append(f[:int(3600/rate)+2])
+		freqs = np.array(fnew)
+	
+	extent = (-0.5, (rate*len(freqs[0])/60)-0.5,\
+			  sizes[1]-0.5, sizes[0]-0.5) # (l, r, b, t)
+
+
+	im = ax.imshow(freqs, cmap=cmap, norm=norm_map, interpolation="none", extent=extent)
+
+	if extent[1] >= 60 and not cutoff:
+		ax.axvline(60, color='m', linestyle='dashed', label="Start temperature change")
+
+	ax.set_xlabel("Time (minutes)")
+	ax.set_ylabel("Droplet diameter ($\\mathrm{\\mu m}$)")
+
+	fraction = 0.046 * ((extent[2]-extent[3])/(extent[1]-extent[0]))
+	if colorbar:
+		fig.colorbar(im, fraction=fraction, label="Fractional increase in frequency")
+
+	return (norm_map, cmap)
+
 
 def time_stats(savefile):
 	data = np.load(savefile)
-	avg_freqs = data['freqs']
-	rate = data['rate']
-	binedges = data['binedges']
 	title = savefile[21:-4]
 	print(title)
-
-	times = [0,int(3600/rate)] # 0 sec and 1h respectively
-	if times[1] >= len(avg_freqs):
-		times[1] = len(avg_freqs)-1
-	to_check = [avg_freqs[i] for i in times]
 
 	ks = stats.ks_2samp(data['t0'], data['t1'])
 	
@@ -178,17 +188,32 @@ def time_stats(savefile):
 	print("P-Value:          ",ks.pvalue)
 	print("KS Stat location: ",ks.statistic_location)
 	print("KS Stat sign:     ",ks.statistic_sign)
+	
+	fig, ax = plt.subplots()
 
+	time_stats_graph(savefile, ax, True)
+	
+
+def time_stats_graph(savefile, ax, plot=True):
+	data = np.load(savefile)
+	avg_freqs = data['freqs']
+	rate = data['rate']
+	binedges = data['binedges']
+	title = savefile[21:-4]
+	
+	times = [0,int(3600/rate)] # 0 sec and 1h respectively
+	if times[1] >= len(avg_freqs):
+		times[1] = len(avg_freqs)-1
+	to_check = [avg_freqs[i] for i in times]
 
 	bincenters = 0.5*(binedges[1:]+binedges[:-1])
-	width = (binedges[-1]-binedges[0])/(3*len(bincenters))
+	width = (binedges[-1]-binedges[0])/(2.2*len(bincenters))
 
-	fig, ax = plt.subplots()
-	ax.bar(bincenters-width/2, to_check[0], width=width, color="b",\
+	ax.bar(bincenters-width/2, to_check[0], width=width, color="b", linewidth=0,\
 		   label="$t=" + str(round(times[0]*rate/60,1)) + "$ mins") 
-	ax.bar(bincenters+width/2, to_check[1], width=width, color="m",\
+	ax.bar(bincenters+width/2, to_check[1], width=width, color="m", linewidth=0,\
 	       label="$t=" + str(round(times[1]*rate/60,1)) + "$ mins") 
-	create_hist(ax, title + " - distribution", True, True, True)
+	create_hist(ax, title + " - distribution", True, True, False, plot=plot)
 
 def dif_stats(file1, file2):
 	data1 = np.load(file1)

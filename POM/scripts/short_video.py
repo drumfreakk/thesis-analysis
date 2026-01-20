@@ -110,16 +110,25 @@ def stats_vids(title, saves, save, show):
 	std_n  = [np.std(i) *100 for i in avg_n]
 	std_s  = [np.std(i) *100 for i in avg_s]
 
+	with open("saves/stats_vids " + title + ".bin", "wb") as f:
+		pickle.dump({"p": p, "mean_n": mean_n, "mean_s": mean_s, "std_n": std_n, "std_s": std_s}, f)
+	
 	fig, ax = plt.subplots()
 
-	w = 0.2 * np.array(p)
+	stats_vids_graph(p, mean_n, mean_s, std_n, std_s, ax)
+	
+	create_plot(title, save, show, False)
+
+def stats_vids_graph(p, mean_n, mean_s, std_n, std_s, ax):
+
+	w = 0.3 * np.array(p)
 	if w[0] == 0.0:
-		w[0] = 0.10
+		w[0] = 0.15
 
 	ax.bar(p, mean_n, yerr=std_n, label="Nematic", color='m', align='edge', width=-w)
 	ax.bar(p, mean_s, yerr=std_s, label="Smectic", color='g', align='edge', width=w)
 	
-	ax.set_ylabel("\\% of droplets which are shape-changing")
+	ax.set_ylabel("\\% shape change")
 	ax.set_xlabel("wt\\% Biotin-X-DHPE")
 
 	ax.set_ylim(bottom=0)
@@ -127,8 +136,4 @@ def stats_vids(title, saves, save, show):
 	ax.set_xscale('symlog', linthresh=1)
 
 	ax.set_xticks(p, p)
-
-	ax.legend()
-	
-	create_plot(title, save, show, True)
 
